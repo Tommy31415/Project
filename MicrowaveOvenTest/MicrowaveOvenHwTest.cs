@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MicrowaveOven;
 using MicrowaveOven.Interfaces;
+using MicrowaveOven.StateMachine;
 using MicrowaveOven.Units;
 using Moq;
 
@@ -14,6 +15,8 @@ namespace MicrowaveOvenTest
         private Mock<ILight> lightMock;
         private Mock<IHeater> heaterMock;
         private Mock<IStartButton> startButtonMock;
+        private Mock<ITimer> timerMock;
+
 
         [TestInitialize]
         public void Setup()
@@ -30,7 +33,9 @@ namespace MicrowaveOvenTest
             startButtonMock = new Mock<IStartButton>();
             startButtonMock.SetupGet(m => m.IsStartButtonPressed).Returns(false);
 
-            microwaveOvenHw = new MicrowaveOvenHw(doorMock.Object, lightMock.Object, heaterMock.Object, startButtonMock.Object);
+            timerMock = new Mock<ITimer>();
+
+            microwaveOvenHw = new MicrowaveOvenHw(doorMock.Object, lightMock.Object, heaterMock.Object, startButtonMock.Object,timerMock.Object);
         }
 
         [TestMethod]
@@ -44,6 +49,7 @@ namespace MicrowaveOvenTest
         public void WhenDoorIsClosedThenLightIsTurnedOff()
         {
             doorMock.SetupGet(m => m.IsDoorOpen).Returns(true);
+            lightMock.SetupGet(m => m.IsIsLightOn).Returns(true);
             microwaveOvenHw.CloseDoor();
             lightMock.Verify(m => m.TurnOffLight(), Times.Once);
         }
@@ -73,8 +79,10 @@ namespace MicrowaveOvenTest
         [TestMethod]
         public void WhenButtonIsPressedAndDoorIsClosedAndIsAlreadyHeatingThenHeaterIncreaseHeatingFor1Minute()
         {
-            startButtonMock.SetupGet(m => m.IsStartButtonPressed).Returns(true);
-            heaterMock.Verify(m => m.TurnOff(),Times.Never);
+            microwaveOvenHw.TurnOnHeater();
+            microwaveOvenHw.TurnOnHeater();
+
+            timerMock.Verify(m => m.Start(),Times.Exactly(2));
         }
     }
 }

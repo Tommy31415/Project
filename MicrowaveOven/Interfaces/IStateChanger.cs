@@ -4,6 +4,6 @@ namespace MicrowaveOven.Interfaces
 {
     public interface IStateChanger
     {
-        void ChangeState(IDoor door, ILight light, IHeater heater, IStartButton startButton);
+        void ChangeState(IDoor door, ILight light, IHeater heater, IStartButton startButton, ITimer timer);
     }
 }

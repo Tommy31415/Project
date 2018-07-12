@@ -1,4 +1,5 @@
 ﻿using System;
+using MicrowaveOven.StateMachine;
 using MicrowaveOven.Units;
 
 namespace MicrowaveOven
@@ -11,8 +12,9 @@ namespace MicrowaveOven
             var heater = new Heater();
             var startButton = new StartButton();
             var door = new Door();
+            var timer = new MicrowaveTimer();
 
-            var microwave = new MicrowaveOvenHw(door, light, heater, startButton);
+            var microwave = new MicrowaveOvenHw(door, light, heater, startButton,timer);
 
             RunCommandLoop(microwave);
         }

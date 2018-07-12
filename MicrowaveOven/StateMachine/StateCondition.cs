@@ -8,11 +8,12 @@ namespace MicrowaveOven.StateMachine
         public bool IsLightOn { get; set; }
         public bool IsHeaterOn { get; set; }
         public bool IsButtonPressed { get; set; }
+        public bool IsTimerOn { get; set; }
 
         protected bool Equals(StateCondition other)
         {
             return IsDoorOpen == other.IsDoorOpen && IsLightOn == other.IsLightOn && IsHeaterOn == other.IsHeaterOn &&
-                   IsButtonPressed == other.IsButtonPressed;
+                   IsButtonPressed == other.IsButtonPressed && IsTimerOn == other.IsTimerOn;
         }
 
         public override bool Equals(object obj)
@@ -31,6 +32,7 @@ namespace MicrowaveOven.StateMachine
                 hashCode = (hashCode * 397) ^ IsLightOn.GetHashCode();
                 hashCode = (hashCode * 397) ^ IsHeaterOn.GetHashCode();
                 hashCode = (hashCode * 397) ^ IsButtonPressed.GetHashCode();
+                hashCode = (hashCode * 397) ^ IsTimerOn.GetHashCode();
                 return hashCode;
             }
         }

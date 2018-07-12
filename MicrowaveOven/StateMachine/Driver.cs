@@ -1,8 +1,7 @@
 using System;
 using System.Timers;
-using MicrowaveOven.StateMachine;
 
-namespace MicrowaveOven
+namespace MicrowaveOven.StateMachine
 {
     public class Driver
     {

@@ -1,4 +1,4 @@
-namespace MicrowaveOven
+namespace MicrowaveOven.StateMachine
 {
     public enum MicrowaveTrigger
     {

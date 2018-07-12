@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Timers;
 using MicrowaveOven.Interfaces;
 using MicrowaveOven.Units;
 
@@ -11,13 +12,21 @@ namespace MicrowaveOven.StateMachine
         private readonly IHeater heater;
         private readonly ILight light;
         private readonly IStartButton startButton;
+        private readonly ITimer timer;
 
-        public StateManager(IDoor door, ILight light, IHeater heater, IStartButton startButton)
+        public StateManager(IDoor door, ILight light, IHeater heater, IStartButton startButton,ITimer timer)
         {
             this.door = door;
             this.light = light;
             this.heater = heater;
             this.startButton = startButton;
+            this.timer = timer;
+            timer.TimeElapsed += TimeElapsed;
+        }
+
+        private void TimeElapsed(object sender, ElapsedEventArgs e)
+        {
+            ChangeState(MicrowaveTrigger.Elapsed);
         }
 
         private StateCondition GetCurrentState()
@@ -27,7 +36,8 @@ namespace MicrowaveOven.StateMachine
                 IsDoorOpen = door.IsDoorOpen,
                 IsLightOn = light.IsIsLightOn,
                 IsHeaterOn = heater.IsHeaterOn,
-                IsButtonPressed = startButton.IsStartButtonPressed
+                IsButtonPressed = startButton.IsStartButtonPressed,
+                IsTimerOn = timer.IsTimerOn
             };
         }
 
@@ -51,7 +61,7 @@ namespace MicrowaveOven.StateMachine
             };
 
             if (TryGetValue(key, out var stateChanger))
-                stateChanger.ChangeState(door, light, heater, startButton);
+                stateChanger.ChangeState(door, light, heater, startButton,timer);
         }
     }
 

@@ -1,47 +1,33 @@
 ﻿using System;
-using System.Timers;
 using MicrowaveOven.Interfaces;
-using MicrowaveOven.StateMachine;
-using MicrowaveOven.Units;
 
-namespace MicrowaveOven
+namespace MicrowaveOven.StateMachine
 {
     public class MicrowaveOvenHw : IMicrowaveOvenHW
     {
         private readonly IDoor door;
-        private const int Minute = 60 * 1000;
-        private readonly Timer microwaveTimer;
 
-        public MicrowaveOvenHw(IDoor door, ILight light, IHeater heater, IStartButton startButton)
+        public MicrowaveOvenHw(IDoor door, ILight light, IHeater heater, IStartButton startButton, ITimer timer)
         {
             this.door = door;
-            microwaveTimer = new Timer
-            {
-                Interval = Minute,
-                AutoReset = false
-            };
 
-            var stateManager = new StateManager(door, light, heater, startButton);
+            var stateManager = new StateManager(door, light, heater, startButton,timer);
             RegisterStateManagerTriggerChanges(stateManager);
 
             var driver = new Driver(stateManager);
 
             DoorOpenChanged += driver.DoorOpenHandler;
             StartButtonPressed += driver.StartButtonPressedHandler;
-            microwaveTimer.Elapsed += driver.TimeElapsed;
         }
 
         public void TurnOnHeater()
         {
             StartButtonPressed(this, EventArgs.Empty);
-
-            microwaveTimer.Interval += Minute;
-            microwaveTimer.Start();
         }
 
         public void TurnOffHeater()
         {
-            microwaveTimer.Stop(); 
+            DoorOpenChanged(false);
         }
 
         public bool DoorOpen => door.IsDoorOpen; 
@@ -55,22 +41,25 @@ namespace MicrowaveOven
                 IsDoorOpen = false,
                 IsLightOn = false,
                 IsHeaterOn = false,
-                IsButtonPressed = false
+                IsButtonPressed = false,
+                IsTimerOn = false
             };
 
             var doorOpenCondition = new StateCondition
             {
                 IsDoorOpen = true,
-                IsLightOn = false,
+                IsLightOn = true,
                 IsHeaterOn = false,
-                IsButtonPressed = false
+                IsButtonPressed = false,
+                IsTimerOn = false,
             };
             var buttonIsPressedCondition = new StateCondition
             {
                 IsDoorOpen = false,
-                IsLightOn = false,
-                IsHeaterOn = false,
-                IsButtonPressed = true
+                IsLightOn = true,
+                IsHeaterOn = true,
+                IsButtonPressed = true,
+                IsTimerOn = true
             };
 
             var stateChangerToDoorOpen = new StateChangerToDoorOpen();
@@ -82,6 +71,9 @@ namespace MicrowaveOven
             stateManager.Register(doorOpenCondition, MicrowaveTrigger.Close, stateChangerToInitial);
             stateManager.Register(initialCondition, MicrowaveTrigger.PressStart,
                 stateChangerToButtonPressed);
+            stateManager.Register(buttonIsPressedCondition, MicrowaveTrigger.PressStart,
+                stateChangerToButtonPressed);
+
             stateManager.Register(buttonIsPressedCondition, MicrowaveTrigger.Open, stateChangerToDoorOpen);
             stateManager.Register(buttonIsPressedCondition, MicrowaveTrigger.Elapsed, stateChangerToInitial);
         }
@@ -94,11 +86,6 @@ namespace MicrowaveOven
         public void CloseDoor()
         {
             DoorOpenChanged(false);
-        }
-
-        public double GetTimeLeft()
-        {
-            return microwaveTimer.Interval;
         }
     }
 }
