@@ -1,20 +1,21 @@
 ﻿using System;
+using MicrowaveOven.Interfaces;
 
 namespace MicrowaveOven.Units
 {
-    public class Heater
+    public class Heater : IHeater
     {
-        public bool IsHeating { get; private set; }
+        public bool IsHeaterOn { get; private set; }
 
         public void TurnOff()
         {
-            IsHeating = false;
+            IsHeaterOn = false;
             Console.WriteLine("Heater is off");
         }
 
         public void TurnOn()
         {
-            IsHeating = true;
+            IsHeaterOn = true;
             Console.WriteLine("Heater is on");
         }
     }

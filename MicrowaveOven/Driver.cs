@@ -1,66 +1,31 @@
 using System;
 using System.Timers;
-using MicrowaveOven.Units;
+using MicrowaveOven.StateMachine;
 
-namespace MicrowaveOven {
+namespace MicrowaveOven
+{
     public class Driver
     {
-        private Light light;
-        private Heater heater;
-        private StartButton startButton;
-        private Door door;
-        private StateManager stateManager;
+        private readonly StateManager stateManager;
 
-        public Driver()
+        public Driver(StateManager stateManager)
         {
-            stateManager = new StateManager();
-            stateManager.Register(MicrowaveTrigger.Open, light.TurnOnLight);//moze rejestrowac przy uzyciu refleksji ? musialby akceptowac wiele
-            stateManager.Register(MicrowaveTrigger.Open, heater.TurnOff);
-            stateManager.Register(MicrowaveTrigger.Open, startButton.ButtonIsNotPressed);
-            stateManager.Register(MicrowaveTrigger.Open, door.OpenDoor);
-
-            stateManager.Register(MicrowaveTrigger.Close, light.TurnOffLight);
-            stateManager.Register(MicrowaveTrigger.Close, heater.TurnOff);
-            stateManager.Register(MicrowaveTrigger.Close, startButton.ButtonIsNotPressed);
-            stateManager.Register(MicrowaveTrigger.Close, door.OpenDoor);
-
-            stateManager.Register(MicrowaveTrigger.PressStart, light.TurnOnLight);
-            stateManager.Register(MicrowaveTrigger.PressStart, heater.TurnOn);
-            stateManager.Register(MicrowaveTrigger.PressStart, startButton.ButtonIsPressed);
-            stateManager.Register(MicrowaveTrigger.PressStart, door.CloseDoor);
-
-            stateManager.Register(MicrowaveTrigger.Elapsed, light.TurnOffLight);
-            stateManager.Register(MicrowaveTrigger.Elapsed, heater.TurnOff);
-            stateManager.Register(MicrowaveTrigger.Elapsed, startButton.ButtonIsNotPressed);
-            stateManager.Register(MicrowaveTrigger.Elapsed, door.CloseDoor);
+            this.stateManager = stateManager;
         }
 
-        public  void DoorOpenHandler(bool isDoorOpen)
+        public void DoorOpenHandler(bool isDoorOpen)
         {
-            if(isDoorOpen)
-                stateManager.ExecuteAction(MicrowaveTrigger.Open);
-            else
-                stateManager.ExecuteAction(MicrowaveTrigger.Close);
+            stateManager.ChangeState(isDoorOpen ? MicrowaveTrigger.Open : MicrowaveTrigger.Close);
         }
 
         public void StartButtonPressedHandler(object sender, EventArgs e)
         {
-            stateManager.ExecuteAction(MicrowaveTrigger.PressStart);
+            stateManager.ChangeState(MicrowaveTrigger.PressStart);
         }
 
         public void TimeElapsed(object sender, ElapsedEventArgs e)
         {
-            stateManager.ExecuteAction(MicrowaveTrigger.Elapsed);
-        }
-
-        public bool GetLightState()
-        {
-            return light.IsIsLightOn;
-        }
-
-        public bool GetHeaterState()
-        {
-            throw new NotImplementedException();
+            stateManager.ChangeState(MicrowaveTrigger.Elapsed);
         }
     }
 }

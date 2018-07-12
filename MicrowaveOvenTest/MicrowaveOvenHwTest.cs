@@ -1,6 +1,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MicrowaveOven.Units;
 using MicrowaveOven;
+using MicrowaveOven.Interfaces;
+using MicrowaveOven.Units;
+using Moq;
 
 namespace MicrowaveOvenTest
 {
@@ -8,61 +10,71 @@ namespace MicrowaveOvenTest
     public class MicrowaveOvenHwTest
     {
         private MicrowaveOvenHw microwaveOvenHw;
-        private Driver driver;
+        private Mock<IDoor> doorMock;
+        private Mock<ILight> lightMock;
+        private Mock<IHeater> heaterMock;
+        private Mock<IStartButton> startButtonMock;
 
         [TestInitialize]
         public void Setup()
         {
-            driver = new Driver();
-            microwaveOvenHw = new MicrowaveOvenHw(driver);
+            doorMock = new Mock<IDoor>();
+            doorMock.SetupGet(m => m.IsDoorOpen).Returns(false);
+
+            lightMock = new Mock<ILight>();
+            lightMock.SetupGet(m => m.IsIsLightOn).Returns(false);
+
+            heaterMock = new Mock<IHeater>();
+            heaterMock.SetupGet(m => m.IsHeaterOn).Returns(false);
+
+            startButtonMock = new Mock<IStartButton>();
+            startButtonMock.SetupGet(m => m.IsStartButtonPressed).Returns(false);
+
+            microwaveOvenHw = new MicrowaveOvenHw(doorMock.Object, lightMock.Object, heaterMock.Object, startButtonMock.Object);
         }
 
         [TestMethod]
         public void WhenDoorIsOpenedThenLightdIsTurnedOn()
         {
-            microwaveOvenHw.OpenDoor(); //czy w property da sie uzywac eventów ? czy to dobry pattern
-            Assert.IsTrue(driver.GetLightState());
+            microwaveOvenHw.OpenDoor(); 
+            lightMock.Verify( m => m.TurnOnLight(),Times.Once);
         }
 
         [TestMethod]
         public void WhenDoorIsClosedThenLightIsTurnedOff()
         {
+            doorMock.SetupGet(m => m.IsDoorOpen).Returns(true);
             microwaveOvenHw.CloseDoor();
-            Assert.IsFalse(driver.GetLightState());
+            lightMock.Verify(m => m.TurnOffLight(), Times.Once);
         }
 
         [TestMethod]
         public void WhenDoorIsOpenedThenHeaterStopsRunning()
         {
             microwaveOvenHw.OpenDoor();
-            Assert.IsFalse(driver.GetHeaterState());
+            heaterMock.Verify(m=>m.TurnOff(),Times.Once);
         }
 
         [TestMethod]
         public void WhenButtonIsPressedAndDoorIsOpenTheanHeaterIsNotStarted()
         {
-            microwaveOvenHw.OpenDoor();
+            doorMock.SetupGet(m => m.IsDoorOpen).Returns(true);
             microwaveOvenHw.TurnOnHeater();
-            Assert.IsFalse(driver.GetHeaterState());
+            heaterMock.Verify(m => m.TurnOn(), Times.Never);
         }
 
         [TestMethod]
         public void WhenButtonIsPressedAndDoorIsClosedThenHeaterRunsFor1Minute()
         {
-            microwaveOvenHw.CloseDoor();
             microwaveOvenHw.TurnOnHeater();
-            Assert.IsTrue(driver.GetHeaterState());
+            heaterMock.Verify(m => m.TurnOn(), Times.Once);
         }
 
         [TestMethod]
         public void WhenButtonIsPressedAndDoorIsClosedAndIsAlreadyHeatingThenHeaterIncreaseHeatingFor1Minute()
         {
-            microwaveOvenHw.CloseDoor();
-            microwaveOvenHw.TurnOnHeater();
-            microwaveOvenHw.TurnOnHeater();
-
-            Assert.IsTrue(driver.GetHeaterState());
-            Assert.IsTrue(microwaveOvenHw.GetTimeLeft() > 60 * 1000);
+            startButtonMock.SetupGet(m => m.IsStartButtonPressed).Returns(true);
+            heaterMock.Verify(m => m.TurnOff(),Times.Never);
         }
     }
 }

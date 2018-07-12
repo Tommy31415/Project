@@ -1,20 +1,21 @@
 ﻿using System;
+using MicrowaveOven.Interfaces;
 
-namespace MicrowaveOven.Units {
-    public class StartButton {
-        private bool isStartButtonPressedState;
+namespace MicrowaveOven.Units
+{
+    public class StartButton : IStartButton
+    {
+        public bool IsStartButtonPressed { get; private set; }
 
-        public bool IsStartButtonPressedState => isStartButtonPressedState;
-       
         public void ButtonIsNotPressed()
         {
-            isStartButtonPressedState = false;
+            IsStartButtonPressed = false;
             Console.WriteLine("Button is not pressed");
         }
 
         public void ButtonIsPressed()
         {
-            isStartButtonPressedState = true;
+            IsStartButtonPressed = true;
             Console.WriteLine("Button is pressed");
         }
     }

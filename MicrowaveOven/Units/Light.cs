@@ -1,7 +1,9 @@
 using System;
+using MicrowaveOven.Interfaces;
 
-namespace MicrowaveOven.Units {
-    public class Light
+namespace MicrowaveOven.Units
+{
+    public class Light : ILight
     {
         public bool IsIsLightOn { get; private set; }
 

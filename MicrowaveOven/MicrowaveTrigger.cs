@@ -1,4 +1,5 @@
-namespace MicrowaveOven {
+namespace MicrowaveOven
+{
     public enum MicrowaveTrigger
     {
         Open,

@@ -1,15 +1,18 @@
 ﻿using System;
+using MicrowaveOven.Units;
 
 namespace MicrowaveOven
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            Console.WriteLine("Hello, your microwave is speaking.");
-            Console.WriteLine("What can I do for you ?");
+            var light = new Light();
+            var heater = new Heater();
+            var startButton = new StartButton();
+            var door = new Door();
 
-            var microwave = new MicrowaveOvenHw(new Driver());
+            var microwave = new MicrowaveOvenHw(door, light, heater, startButton);
 
             RunCommandLoop(microwave);
         }
@@ -19,10 +22,9 @@ namespace MicrowaveOven
             while (true)
             {
                 PrintMenu();
-                int commandNumer = 0;
+                var commandNumer = 0;
                 var result = Console.ReadLine();
-                if (Int32.TryParse(result, out commandNumer))
-                {
+                if (int.TryParse(result, out commandNumer))
                     switch (commandNumer)
                     {
                         case 1:
@@ -35,11 +37,8 @@ namespace MicrowaveOven
                             microwave.TurnOnHeater();
                             break;
                     }
-                }
                 else
-                {
                     break;
-                }
             }
         }
 
@@ -49,7 +48,6 @@ namespace MicrowaveOven
             Console.WriteLine("2. Close Door");
             Console.WriteLine("3. Press Start Button");
             Console.WriteLine("Press Enter to exit.");
-
         }
     }
 }
